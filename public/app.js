@@ -45,10 +45,16 @@ learnjs.problemView = function(data) {
     var view = $('.templates .problem-view').clone();
     var problemData = learnjs.problems[problemNumber-1];
     var resultFlash = view.find('.result');
+    var answer = view.find('.answer');
+
+    learnjs.fetchAnswer(problemNumber).then(function(data) {
+        if (data.Item) {
+            answer.val(data.Item.answer);
+        }
+    });
 
     function checkAnswer() {
-        var answer = view.find('.answer').val();
-        var test = problemData.code.replace('__', answer) + '; problem();';
+        var test = problemData.code.replace('__', answer.val()) + '; problem();';
         var result;
 
         try {
@@ -64,6 +70,7 @@ learnjs.problemView = function(data) {
         if (checkAnswer()) {
             var correctFlash = learnjs.buildCorrectFlash(problemNumber);
             learnjs.flashElement(resultFlash, correctFlash);
+            learnjs.saveAnswer(problemNumber, answer.val());
         } else {
             learnjs.flashElement(resultFlash, 'Incorrect!');
         }
@@ -81,7 +88,7 @@ learnjs.problemView = function(data) {
             buttonItem.remove();
         });
     }
-
+    
     learnjs.applyObject(problemData, view);
     return view;
 }
@@ -149,6 +156,61 @@ learnjs.addProfileLink = function(profile) {
     $('.signin-bar').prepend(link);
 }
 
+learnjs.sendDbRequest = function(req, retry) {
+    var promise = new $.Deferred();
+    req.on('error', function(error) {
+        if (error.code === "CredentialsError") {
+            learnjs.identity.then(function(identity) {
+                return identity.refresh().then(function() {
+                    return retry();
+                }, function() {
+                    promise.reject(resp);
+                });
+            });
+        } else {
+            promise.reject(error);
+        }
+    });
+    req.on('success', function(resp) {
+        promise.resolve(resp.data);
+    });
+    req.send();
+    return promise;
+}
+
+learnjs.saveAnswer = function(problemId, answer) {
+    return learnjs.identity.then(function(identity) {
+        var db = new AWS.DynamoDB.DocumentClient();
+        var item = {
+            TableName: 'learnjs',
+            Item: {
+                userId: identity.id,
+                problemId: problemId,
+                answer: answer
+            }
+        };
+        return learnjs.sendDbRequest(db.put(item), function() {
+            return learnjs.saveAnswer(problemId, answer);
+        });
+    });
+}
+
+learnjs.fetchAnswer = function(problemId) {
+    return learnjs.identity.then(function(identity) {
+        var db = new AWS.DynamoDB.DocumentClient();
+        var item = {
+            TableName: 'learnjs',
+            Key: {
+                userId: identity.id,
+                problemId: problemId
+            }
+        };
+        return learnjs.sendDbRequest(db.get(item), function() {
+            return learnjs.fetchAnswer(problemId);
+        });
+    });
+}
+
 function googleSignIn(googleUser) {
     var id_token = googleUser.getAuthResponse().id_token;
     AWS.config.update ({
@@ -161,22 +223,22 @@ function googleSignIn(googleUser) {
         })
     })
 
-    function refresh() {
-        return gapi.auth2.getAuthInstance().signIn({
-            prompt: 'login'
-        }).then(function(userUpdate) {
-            var creds = AWS.config.credentials;
-            var newToken = userUpdate.getAuthResponse().id_token;
-            creds.params.Logins['accounts.google.com'] = newToken;
-            return learnjs.awsRefresh();
-        });
-    }
-
     learnjs.awsRefresh().then(function(id) {
         learnjs.identity.resolve({
             id: id,
             email: googleUser.getBasicProfile().getEmail(),
             refresh: refresh
         });
+    });
+}
+
+function refresh() {
+    return gapi.auth2.getAuthInstance().signIn({
+        prompt: 'login'
+    }).then(function(userUpdate) {
+        var creds = AWS.config.credentials;
+        var newToken = userUpdate.getAuthResponse().id_token;
+        creds.params.Logins['accounts.google.com'] = newToken;
+        return learnjs.awsRefresh();
     });
 }
