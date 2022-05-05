@@ -252,7 +252,7 @@ function create_iam_role() {
 function create_lambda_service() {
   local service_dir=${1%/}
   local function_name=$(basename $service_dir)
-  create_iam_role lambda_exec "file://conf/iam/policies/lambda_trust.json"
+  # create_iam_role lambda_exec "file://conf/iam/policies/lambda_trust.json"
   echo -n "Waiting for IAM Role to become available..."
   local role_arn=$(support/jsed.py conf/iam/roles/${app_name}_lambda_exec/info.json 'Role.Arn')
   while ! aws --profile $profile iam get-role --role-name ${app_name}_lambda_exec &> /dev/null; do
@@ -260,11 +260,14 @@ function create_lambda_service() {
   done
   sleep 5 # See issue #17
   echo "...done!"
+  echo "function_name is ${function_name}"
+  echo "role_arn is ${role_arn}"
+  echo "service_dir is ${service_dir}"
   if [[ ! -e ${service_dir}/info.json ]]; then
     aws --profile $profile lambda create-function \
       --function-name ${function_name} \
       --role ${role_arn} \
-      --runtime nodejs4.3 \
+      --runtime nodejs12.x \
       --zip-file "fileb://services/archive.zip" \
       --handler "index.${function_name}" \
       --cli-input-json "file://${service_dir}/config.json" \
