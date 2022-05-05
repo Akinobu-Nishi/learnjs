@@ -135,7 +135,7 @@ function create_cognito_auth_role() {
   local identity_pool_dir=$1
   local pool_id=$(support/jsed.py ${identity_pool_dir}/pool_info.json 'IdentityPoolId')
   local pool_name=$(support/jsed.py ${identity_pool_dir}/pool_info.json 'IdentityPoolName')
-  generate_assume_role_policy ${pool_id} > ${identity_pool_dir}/assume_role_policy.json
+  # generate_assume_role_policy ${pool_id} > ${identity_pool_dir}/assume_role_policy.json
   if [[ ! -s ${identity_pool_dir}/role_info.json ]]; then
     local role_name="${pool_name}_cognito_authenticated"
     echo "Creaing role: $role_name"
@@ -192,8 +192,8 @@ function create_table() {
     echo "...done!"
   fi
 
-  local table_arn=$(support/jsed.py ${table_dir}/table_info.json 'Table.TableArn')
-  generate_table_policy ${table_arn} > ${table_dir}/role_policy.json
+  # local table_arn=$(support/jsed.py ${table_dir}/table_info.json 'Table.TableArn')
+  # generate_table_policy ${table_arn} > ${table_dir}/role_policy.json
   aws --profile $profile iam put-role-policy \
     --policy-document file://${table_dir}/role_policy.json \
     --role-name ${role_name} \
