@@ -1,0 +1,6 @@
+{
+    "Runtime": "nodejs12.x", 
+    "Timeout": 5, 
+    "MemorySize": 512, 
+    "Publish": true
+}

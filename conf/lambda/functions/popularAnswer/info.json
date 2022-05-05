@@ -1,0 +1,3 @@
+IJO7Z64u4ELa+aLKkRRjAcoXeyW7okwHZc1c7aX5c2o=	820853		arn:aws:lambda:ap-northeast-1:923436020120:function:popularAnswer	popularAnswer	index.popularAnswer	2022-05-03T13:57:01.847+0000	512	Zip	37b25b91-f54d-46c1-8cef-444741cbe171	arn:aws:iam::923436020120:role/learnjs_lambda_exec	nodejs12.x	Pending	The function is being created.	Creating	5	1
+ARCHITECTURES	x86_64
+TRACINGCONFIG	PassThrough
