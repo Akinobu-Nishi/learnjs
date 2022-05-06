@@ -71,7 +71,7 @@ learnjs.problemView = function(data) {
     function checkAnswerClick() {
         checkAnswer().done(function() {
             var flashContent = learnjs.buildCorrectFlash(problemNumber);
-            learnjs.flashElement(resultFlash, correctFlash);
+            learnjs.flashElement(resultFlash, flashContent);
             learnjs.saveAnswer(problemNumber, answer.val());
         }).fail(function() {
             learnjs.flashElement(resultFlash, 'Incorrect!');
@@ -153,9 +153,9 @@ learnjs.awsRefresh = function() {
 }
 
 learnjs.addProfileLink = function(profile) {
-    var link = learnjs.template('profile-link');
-    link.find('a').text(profile.email);
-    $('.signin-bar').prepend(link);
+    var view = $('.nav-container .profile-link').clone();
+    view.find('a').text(profile.email);
+    $('.signin-bar').prepend(view);
 }
 
 learnjs.sendDbRequest = function(req, retry) {
