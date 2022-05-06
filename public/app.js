@@ -54,26 +54,28 @@ learnjs.problemView = function(data) {
     });
 
     function checkAnswer() {
+        var def = $.Deferred();
         var test = problemData.code.replace('__', answer.val()) + '; problem();';
-        var result;
-
-        try {
-            result = eval(test);
-        } catch(error) {
-            result = false;
+        var worker = new Worker('worker.js');
+        worker.onmessage = function(e) {
+            if (e.data) {
+                def.resolve(e.data);
+            } else {
+                def.reject();
+            }
         }
-
-        return result;
+        worker.postMessage(test);
+        return def;
     }
 
     function checkAnswerClick() {
-        if (checkAnswer()) {
-            var correctFlash = learnjs.buildCorrectFlash(problemNumber);
+        checkAnswer().done(function() {
+            var flashContent = learnjs.buildCorrectFlash(problemNumber);
             learnjs.flashElement(resultFlash, correctFlash);
             learnjs.saveAnswer(problemNumber, answer.val());
-        } else {
+        }).fail(function() {
             learnjs.flashElement(resultFlash, 'Incorrect!');
-        }
+        });
         return false;
     }
 
