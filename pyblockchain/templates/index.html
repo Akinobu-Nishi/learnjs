@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <meta charset="=UTF-8">
+        <meta charset="UTF-8">
         <title>Wallet</title>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
         <script>
@@ -46,6 +46,26 @@
                         }
                     })
                 })
+                function reload_amount() {
+                    let data = {'blockchain_address': $('blockchain_address').val()}
+                    $.ajax ({
+                        url: '/wallet/amount',
+                        type: 'GET',
+                        data: data,
+                        success: function (response) {
+                            let amount = response['amount'];
+                            $('#wallet_amount').text(amount);
+                            console.log(amount)
+                        },
+                        error: function (error) {
+                            console.error(error)
+                        }
+                    })
+                }
+                $('#reload_wallet').click(function() {
+                    reload_amount();
+                });
+                serInterval(reload_amount, 3000);
             })
         </script>
     </head>
