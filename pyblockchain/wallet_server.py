@@ -37,6 +37,7 @@ def create_transaction():
         'value' )
     if not all(k in request_json for k in required):
         return 'missing values', 400
+
     sender_private_key = request_json['sender_private_key']
     sender_blockchain_address = request_json['sender_blockchain_address']
     recipient_blockchain_address = request_json['recipient_blockchain_address']
@@ -57,10 +58,9 @@ def create_transaction():
         'value': value,
         'signature': transaction.generate_signature(),
     }
-
-    response = request.post (
+    response = requests.post (
         urllib.parse.urljoin(app.config['gw'], 'transactions'),
-        json=json_data, timeout=3)
+        json=json_data, timeout=3 )
 
     if response.status_code == 201:
         return jsonify({'message': 'success'}), 201

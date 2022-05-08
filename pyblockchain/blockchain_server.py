@@ -46,8 +46,8 @@ def transaction():
         required = (
             'sender_blockchain_address',
             'recipient_blockchain_address',
-            'sender_public_key',
             'value',
+            'sender_public_key',
             'signature' )
         if not all(k in request_json for k in required):
             return jsonify({'message': 'missing values'}), 400
@@ -62,16 +62,6 @@ def transaction():
         if not is_created:
             return jsonify({'message': 'fail'}), 400
         return jsonify({'message': 'success'}), 201
-
-
-
-
-
-
-
-
-
-
 
 if __name__ == '__main__':
     from argparse import ArgumentParser
